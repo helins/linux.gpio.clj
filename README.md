@@ -1,5 +1,8 @@
 # dvlopt.linux.gpio
 
+[![Clojars
+Project](https://img.shields.io/clojars/v/dvlopt/linux.gpio.svg)](https://clojars.org/dvlopt/linux.gpio)
+
 Handle [GPIO](https://github.com/dvlopt/linux-gpio.java) lines in a fast and
 portable way from Clojure.
 
