@@ -9,6 +9,13 @@ space by using the "new" Linux API which is convenient, standard, and offers a
 some advantages over other methods (eg. automatic clean-up of resources when
 lines are released).
 
+## Usage
+
+Read the
+[API](https://dvlopt.github.io/doc/clojure/linux.gpio/dvlopt.linux.gpio.html).
+
+Have a look at the [examples](./examples).
+
 ## License
 
 Copyright © 2018 Adam Helinski
