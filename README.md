@@ -6,7 +6,7 @@ portable way from Clojure.
 Based on [linux-gpio.java](https://github.com/dvlopt/linux-gpio.java). Go there
 for rationale and background. In short, this API controls GPIO device from user
 space by using the "new" Linux API which is convenient, standard, and offers a
-few advantages over other methods (eg. automatic clean-up of resources when
+some advantages over other methods (eg. automatic clean-up of resources when
 lines are released).
 
 ## License
