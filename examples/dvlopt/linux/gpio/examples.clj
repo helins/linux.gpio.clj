@@ -60,7 +60,7 @@
 
 (defn push-buttons
 
-  "Given line numbers refering to push-buttons, logs everytime a button is released until the timeout
+  "Given line numbers refering to push-buttons, logs every time a button is released until the timeout
    elapses.
 
    In the REPL, press CTRL-C in order to stop."
