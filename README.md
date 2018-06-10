@@ -19,6 +19,9 @@ Read the
 
 Have a look at the [examples](./examples).
 
+Attention, at least read permission is needed for the used GPIO devices, which
+is enough even for writing to outputs.
+
 For instance :
 
 ```clj
