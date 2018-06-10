@@ -8,7 +8,8 @@
   :dependencies [[dvlopt/void          "0.0.0"]
                  [org.clojure/clojure  "1.9.0"]
                  [io.dvlopt/linux-gpio "1.0.0"]]
-  :profiles     {:dev {:source-paths ["dev"]
+  :profiles     {:dev {:source-paths ["dev"
+                                      "examples"]
                        :main         user
                        :dependencies [[org.clojure/test.check "0.10.0-alpha2"]
                                       [criterium              "0.4.4"]]

@@ -11,6 +11,7 @@
             [clojure.test                    :as t]
             [criterium.core                  :as ct]
             [dvlopt.linux.gpio               :as gpio]
+            [dvlopt.linux.gpio.examples      :as gpio.examples]
             [dvlopt.void                     :as void])
   (:import com.sun.jna.Memory
            (io.dvlopt.linux.gpio GpioBuffer
