@@ -1,8 +1,8 @@
-(defproject dvlopt/linux-gpio
+(defproject dvlopt/linux.gpio
             "0.0.0"
 
   :description  "Use the standard Linux GPIO api from Clojure"
-  :url          "https://github.com/dvlopt/linux-gpio.clj"
+  :url          "https://github.com/dvlopt/linux.gpio.clj"
   :license      {:name "Eclipse Public License"
                  :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[dvlopt/void          "0.0.0"]
