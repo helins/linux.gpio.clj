@@ -15,7 +15,7 @@ lines are released).
 ## Usage
 
 Read the
-[API](https://dvlopt.github.io/doc/clojure/linux.gpio/dvlopt.linux.gpio.html).
+[API](https://dvlopt.github.io/doc/clojure/dvlopt/linux.gpio/index.html).
 
 Have a look at the [examples](./examples).
 
