@@ -12,6 +12,9 @@ space by using the "new" Linux API which is convenient, standard, and offers a
 some advantages over other methods (eg. automatic clean-up of resources when
 lines are released).
 
+For information about running Clojure on the Raspberry Pi, here is a
+[guide](https://github.com/dvlopt/clojure-raspberry-pi).
+
 ## Usage
 
 Read the
