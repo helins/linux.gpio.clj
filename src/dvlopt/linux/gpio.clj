@@ -294,7 +294,7 @@
 
    Closing a GPIO device does not close related resources (ie. obtained handles and watchers)."
 
-  ^GpioDevice
+  ^AutoCloseable
 
   [device-path]
 
@@ -410,8 +410,8 @@
   (when-not (contains? tag->GpioLine
                        tag)
 
-    (throw (IllegalArgumentException. (str "GPIO buffer is not responsible for tag -> "
-                                           tag))))
+    (throw (IllegalArgumentException. (format "GPIO buffer is not handling tag = %s"
+                                              tag))))
   (get tag->GpioLine
        tag))
 
@@ -422,7 +422,7 @@
 
   "For objects that can work with a GPIO buffer."
 
-  (buffer [this]
+  (buffer ^AutoCloseable [this]
 
     "Produces a GPIO buffer representing the state of up to 64 lines.
 
@@ -693,14 +693,18 @@
                     ::state true}}
                {::direction :output})"
 
-  ([device lines-number->line-options]
+  (^AutoCloseable
+
+   [device lines-number->line-options]
 
    (handle device
            lines-number->line-options
            nil))
 
 
-  ([^GpioDevice device line-number->line-options handle-options]
+  (^AutoCloseable
+    
+   [^GpioDevice device line-number->line-options handle-options]
 
    (let [req           (GpioHandleRequest.)
          tag->GpioLine (reduce-kv (fn add-tag [tag->GpioLine line-number line-options]
@@ -859,6 +863,8 @@
                  23 {::tag       :right-button
                      ::direction :output}})"
 
+  ^AutoCloseable
+
   [^GpioDevice device line-number->watch-options]
 
   (let [gpio-watcher      (GpioEventWatcher.)
@@ -925,8 +931,8 @@
                      (-raw-type buffer))
               (get-line buffer
                         tag))
-            (throw (IllegalArgumentException. (str "GPIO watcher is not responsible for tag -> "
-                                                   tag)))))
+            (throw (IllegalArgumentException. (format "GPIO watcher is not handling tag = %s"
+                                                      tag)))))
 
 
         (event [this]
@@ -945,4 +951,4 @@
              ::tag            (get line-number->tag
                                    (.getId gpio-event))}))
       )
-  ))
+    ))
