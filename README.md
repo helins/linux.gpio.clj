@@ -12,15 +12,18 @@ space by using the "new" Linux API which is convenient, standard, and offers a
 some advantages over other methods (eg. automatic clean-up of resources when
 lines are released).
 
+Compatible with Linux 4.8 and higher, tested on the Raspberry Pi 3.
+
 For information about running Clojure on the Raspberry Pi, here is a
 [guide](https://github.com/dvlopt/clojure-raspberry-pi).
 
 ## Usage
 
 Read the
-[API](https://dvlopt.github.io/doc/clojure/dvlopt/linux.gpio/index.html).
+[API](https://dvlopt.github.io/doc/clojure/dvlopt/linux.gpio/index.html). The
+namespace description summerizes everything there is to know.
 
-Have a look at the [examples](./examples).
+You might want to have a look at the [examples](./examples).
 
 Attention, at least read permission is needed for the used GPIO devices, which
 is enough even for writing to outputs.
@@ -38,15 +41,15 @@ For instance :
 ;; order to describe the state of the leds.
 
 
-(with-open [^AutoCloseable device         (gpio/device "/dev/gpiochip0")
-            ^AutoCloseable led-handle     (gpio/handle device
-                                                       {17 {::gpio/state false
-                                                            ::gpio/tag   :led-1}
-                                                        18 {::gpio/state true
-                                                            ::gpio/tag   :led-2}}
-                                                       {::gpio/direction :output})
-            ^AutoCloseable button-watcher (gpio/watcher device
-                                                        {22 {::gpio/direction :input}})]
+(with-open [device         (gpio/device "/dev/gpiochip0")
+            led-handle     (gpio/handle device
+                                        {17 {::gpio/state false
+                                             ::gpio/tag   :led-1}
+                                         18 {::gpio/state true
+                                             ::gpio/tag   :led-2}}
+                                        {::gpio/direction :output})
+            button-watcher (gpio/watcher device
+                                         {22 {::gpio/direction :input}})]
   (let [buffer (gpio/buffer led-handle)]
     (loop [leds (cycle [:led-1
                         :led-2])]
