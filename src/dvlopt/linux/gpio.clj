@@ -65,8 +65,7 @@
   {:author "Adam Helinski"}
 
   (:refer-clojure :exclude [read])
-  (:require [clojure.spec.alpha :as s]
-            [dvlopt.void        :as void])
+  (:require [dvlopt.void :as void])
   (:import (io.dvlopt.linux.gpio GpioBuffer
                                  GpioChipInfo
                                  GpioDevice
@@ -81,203 +80,6 @@
                                  GpioLine
                                  GpioLineInfo)
            java.lang.AutoCloseable))
-
-
-
-
-;;;;;;;;;; Declarations
-
-
-(declare IBuffer
-         IBuffereable
-         IHandle
-         IWatcher)
-
-
-
-
-;;;;;;;;;; Specs for IO related objects
-
-
-(s/def ::auto-closeable
-
-  #(instance? AutoCloseable
-              %))
-
-
-(s/def ::buffer
-
-  #(satisfies? IBuffer
-               %))
-
-
-(s/def ::buffereable
-
-  (s/and ::auto-closeable
-         #(satisfies? IBuffereable
-                      %)))
-
-
-(s/def ::device
-
-  (s/and ::auto-closeable
-         #(instance? GpioDevice
-                     %)))
-
-
-(s/def ::handle
-
-  (s/and ::auto-closeable
-         ::buffereable
-         #(satisfies? IHandle
-                      %)))
-
-
-(s/def ::watcher
-
-  (s/and ::auto-closeable
-         ::buffereable
-         #(satisfies? IWatcher
-                      %)))
-
-
-;;;;;;;;;; Specs for concepts relevant to this library
-
-
-(s/def ::active-low?
-
-  boolean?)
-
-
-(s/def ::chip-description
-
-  (s/keys :req [::n-lines]
-          :opt [::label
-                ::name]))
-
-
-(s/def ::consumer
-
-  (s/and string?
-         not-empty))
-
-
-(s/def ::direction
-
-  #{:input
-    :output})
-
-
-(s/def ::edge
-
-  #{:falling
-    :rising})
-
-
-(s/def ::edge-detection
-
-  #{:rising
-    :falling
-    :rising-and-falling})
-
-
-(s/def ::event
-
-  (s/keys :req [::edge
-                ::nano-timestamp
-                ::tag]))
-
-
-(s/def ::flags
-
-  (s/keys :opt [::active-low?
-                ::direction
-                ::open-drain?
-                ::open-source?]))
-
-
-(s/def ::label
-
-  (s/and string?
-         not-empty))
-
-
-(s/def ::line-description
-
-  (s/keys :req [::active-low?
-                ::direction
-                ::line-number
-                ::open-drain?
-                ::open-source?
-                ::used?]
-          :opt [::consumer
-                ::name]))
-
-
-(s/def ::line-number
-
-  (s/int-in 0
-            65))
-
-
-(s/def ::n-lines
-
-  (s/int-in 0
-            65))
-
-
-(s/def ::name
-
-  (s/and string?
-         not-empty))
-
-
-(s/def ::nano-timestamp
-
-  (s/and int?
-         #(>= %
-              0)))
-
-
-(s/def ::open-drain?
-
-  boolean?)
-
-
-(s/def ::open-source?
-
-  boolean?)
-
-
-(s/def ::state
-
-  boolean?)
-
-
-(s/def ::tag
-
-  any?)
-
-
-(s/def ::tag->state
-
-  (s/map-of ::tag
-            ::state))
-
-
-(s/def ::tags
-
-  (s/coll-of ::tag))
-
-
-(s/def ::timeout-ms
-
-  int?)
-
-
-(s/def ::used?
-
-  boolean?)
 
 
 
@@ -297,11 +99,6 @@
 ;;;;;;;;;;
 
 
-(s/fdef close
-
-  :args (s/cat :resource ::auto-closeable))
-
-
 (defn close
 
   "Closes a GPIO resource such as a device or a handle.
@@ -317,14 +114,6 @@
 
 
 ;;;;;;;;;;
-
-
-(s/fdef device
-
-  :args (s/cat :device-path (s/or :string (s/and string?
-                                                 not-empty)
-                                  :number number?))
-  :ret  ::device)
 
 
 (defn device
@@ -346,12 +135,6 @@
     (GpioDevice. ^String device-path)))
 
 
-
-
-(s/fdef describe-chip
-
-  :args (s/tuple ::device)
-  :ret  ::chip-description)
 
 
 (defn describe-chip
@@ -377,13 +160,6 @@
                      ::name  (.getName  info))))
 
 
-
-
-(s/fdef describe-line
-
-  :args (s/tuple ::device
-                 ::line-number)
-  :ret  ::line-description)
 
 
 (defn describe-line 
@@ -557,57 +333,6 @@
 
 
 
-(s/fdef clear-lines
-
-  :args (s/tuple ::buffer)
-  :ret  ::buffer)
-
-
-(s/fdef get-line
-
-  :args (s/tuple ::buffer
-                 ::tag)
-  :ret  ::buffer)
-
-
-(s/fdef get-lines
-
-  :args (s/tuple ::buffer
-                 ::tags)
-  :ret  ::tag->state)
-
-
-(s/fdef set-line
-
-  :args (s/tuple ::buffer
-                 ::tag
-                 ::state)
-  :ret  ::buffer)
-
-
-(s/fdef set-lines
-
-  :args (s/tuple ::buffer
-                 ::tag->state)
-  :ret  ::buffer)
-
-
-(s/fdef toggle-line
-
-  :args (s/tuple ::buffer
-                 ::tag)
-  :ret  ::buffer)
-
-
-(s/fdef toggle-lines
-
-  :args (s/cat ::buffer ::buffer
-               ::tags   (s/? ::tags))
-  :ret  ::buffer)
-
-
-
-
 (defn- -buffer
 
   ;; Produces a buffer associated with a bunch of tags.
@@ -711,45 +436,6 @@
     "Using a handle, writes the current state of lines using the given buffer."))
 
 
-
-
-(s/fdef read
-
-  :args (s/cat ::handle ::handle
-               ::buffer ::buffer))
-
-
-(s/fdef write
-
-  :args (s/cat ::handle ::handle
-               ::buffer ::buffer))
-
-
-
-(s/def ::handle-options
-
-  (s/nilable (s/merge ::flags
-                      (s/keys :opt [::consumer]))))
-
-
-(s/def ::line-number->line-options
-
-  (s/map-of ::line-number
-            ::line-options))
-
-
-(s/def ::line-options
-
-  (s/keys :opt [::state
-                ::tag]))
-
-
-(s/fdef handle
-
-  :args  (s/cat ::device                    ::device
-                ::line-number->line-options ::line-number->line-options
-                ::handle-options            (s/? ::handle-options))
-  :ret  ::handle)
 
 
 (defn handle
@@ -894,24 +580,6 @@
 
 
 
-(s/fdef poll
-
-  :args (s/tuple ::watcher
-                 ::buffer
-                 ::tag)
-  :ret  ::state)
-
-
-(s/fdef wait
-
-  :args (s/tuple ::watcher
-                 ::timeout-ms)
-  :ret  (s/or :nothing nil?
-              :event   ::event))
-
-
-
-
 (defn- -close-watcher-resources
 
   ;; Closes all resources related to a watcher.
@@ -923,20 +591,6 @@
     (close event-handle)))
 
 
-
-
-(s/def ::line-number->watch-options
-
-  (s/map-of ::line-number
-            (s/merge ::handle-options
-                     ::line-options)))
-            
-
-(s/fdef watcher
-
-  :args (s/tuple ::device
-                 ::line-number->watch-options)
-  :ret  ::watcher)
 
 
 (defn watcher
