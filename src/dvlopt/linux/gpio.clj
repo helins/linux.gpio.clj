@@ -1,26 +1,66 @@
 (ns dvlopt.linux.gpio
 
-  "This namespace provides utilities for opening a GPIO device in order to :
-  
-       - Request some information (eg. about a line).
+  "This namespace provides utilities for handling a GPIO device. Compatible with Linux 4.8 and higher.
+
+   Access to a GPIO device can be obtained by using the `device` function. Three things can then be accomplished :
+
+       - Request some information about the GPIO device or a specific GPIO line.
        - Request a handle for driving one or several lines at once.
        - Request a watcher for efficiently monitoring one or several lines.
 
-   A handle controls all the lines it is responsible for at once. Whether those lines
-   are actually driven exactly at the same time, atomically, depends on the underlying
-   driver and is opaque to this library.
+   A handle controls all the lines it is responsible for at once. Whether those lines are actually driven exactly at
+   the same time, atomically, depends on the underlying driver and is opaque to this library. Once a handle is created
+   with the `handle` function on the appropriate GPIO device, one or several dedicated buffers can be created with the
+   `buffer` function. The purpose of a buffer is to represent and/or manipulate the state of the lines controlled by a
+   handle (up to 64). The state of a line can either be HIGH (true) or LOW (false).
 
-   A watcher is used essentially for interrupts. Requested events, such as a line
-   transitioning from false to true, are queued by the kernel until read. However, Linux
-   not being a real-time OS, such \"interrupts\" are imperfect and should not be used for
-   critical tasks where a simple microcontroller will be of a better fit.
+   A watcher is used essentially for interrupts. Requested events, such as a line transitioning from LOW to HIGH, are
+   queued by the kernel until read. However, Linux not being a real-time OS, such \"interrupts\" are imperfect and should
+   not be used for critical tasks where a simple microcontroller will be of a better fit.
   
-   Lines are abstracted by associating a line number with a tag (ie. any value meant to be
-   more representative of what the line does, often a keyword).
+   Lines are abstracted by associating a line number with a tag (ie. any value meant to be more representative of what the
+   line does, often a keyword).
   
-   As usual, all IO functions might throw if anything goes wrong.
-  
-   All functions and important concepts are specified with clojure.spec."
+   As usual, all IO functions might throw if anything goes wrong and do not forget to use `close` or the \"with-open idiom\"
+   on all acquired IO resources. Closing a GPIO device do not close related handles and watchers.
+
+
+   Here is a description of the keywords typically used throughout this library :
+
+    ::active-low?
+      Lines are typically active-high, meaning they become active when HIGH (true) and inactive when LOW (false). Active-low
+      lines reverse this logical flow. They become active when LOW and inactive when HIGH.
+
+    ::consumer
+      An arbitrary string can be supplied when creating a handle. If a line is in use and associated with a consumer, it will
+      show up when querying its state using `describe-line`. It allows for tracking who is using what.
+
+    ::direction
+      A line can either be used as :input or :output, never both at the same time. All lines associated
+      with a handle must be of the same direction.
+
+    ::label
+      The operating system might associate a GPIO device and individual lines with string labels.
+
+    ::line-number
+      A single GPIO device can represent at most 64 lines. Hence, a line number is between 0 and 63 inclusive.
+
+    ::name
+      The operating system might associate a GPIO device and individual lines with string names.
+
+    ::open-drain?
+      Lines can act as open drains (ie. can only be driven to LOW).
+
+    ::open-source?
+      Lines can be open sources (ie. can only be driven to HIGH).
+
+    ::state
+      The state of a line can either be logical HIGH (true) or logical LOW (false).
+
+    ::tag
+      Instead of using raw line numbers which don't really mean anything, they can be associated with any value such
+      as a string or a keyword. Besides being more descriptive, the program remains valid when the user dedices to use
+      different lines while creating a handle (as long as tags remain the same)."
 
   {:author "Adam Helinski"}
 
@@ -264,7 +304,9 @@
 
 (defn close
 
-  "Closes a GPIO resource such as a device or a handle."
+  "Closes a GPIO resource such as a device or a handle.
+  
+   It may be easier to use the standard `with-open` macro."
 
   [^AutoCloseable resource]
 
@@ -287,12 +329,13 @@
 
 (defn device
 
-  "Opens a GPIO device either by specifying a full path or by giving the number of the
-   device.
+  "Opens a GPIO device either by specifying a full path or by giving the number of the device.
   
+   Those devices are located at '/dev/gpiochip$X' where $X is a number.
+
    Read permission must be granted, which is enough even for writing to outputs.
 
-   Closing a GPIO device does not close related resources (ie. obtained handles and watchers)."
+   Attention, closing a GPIO device does not close related handles and watchers."
 
   ^AutoCloseable
 
@@ -313,7 +356,18 @@
 
 (defn describe-chip
 
-  "Requests a description of the given GPIO device."
+  "Requests a description of the given GPIO device.
+  
+   Returns a map containing :
+
+     ::label (optional)
+       Cf. Namespace description
+
+     ::n-lines
+       Number of available lines for that chip.
+
+     ::name (optional)
+       Cf. Namespace description."
 
   [^GpioDevice device]
 
@@ -334,7 +388,25 @@
 
 (defn describe-line 
 
-  "Requests a description of the given line."
+  "Requests a description of the given line.
+  
+   Returns a map which may contain :
+
+     ::active-low?
+     ::consumer (optional)
+     ::direction
+       Cf. Namespace description
+
+     ::line-number
+       Number of the line.
+
+     ::name (optional)
+     ::open-drain?
+     ::open-source?
+       Cf. Namespace description
+
+     ::used?
+       Is this line currently in use ?"
 
   [^GpioDevice device line-number]
 
@@ -364,21 +436,21 @@
   
   ^GpioFlags
 
-  [opts]
+  [options]
 
   (let [^GpioFlags flags (GpioFlags.)]
-    (when (::active-low? opts)
+    (when (::active-low? options)
       (.setActiveLow flags
                      true))
-    (when-some [direction (::direction opts)]
+    (when-some [direction (::direction options)]
       (condp identical?
              direction
         :input  (.setInput  flags)
         :output (.setOutput flags)))
-    (when (::open-drain? opts)
+    (when (::open-drain? options)
       (.setOpenDrain flags
                      true))
-    (when (::open-source? opts)
+    (when (::open-source? options)
       (.setOpenSource flags
                       true))
     flags))
@@ -391,7 +463,7 @@
 
 (defprotocol ^:private IPure
 
-  ;; Retrieves the raw java type from the original library
+  ;; Retrieves the raw Java type from the original library.
 
   (^:private -raw-type [this]))
 
@@ -436,7 +508,7 @@
 
 (defprotocol IBuffer
 
-  "Controlling a GPIO buffer before or after doing some IO.
+  "Reading or writing the state of lines in a buffer before or after doing some IO.
   
    Ex. (write some-handle
               (-> some-buffer
@@ -446,7 +518,7 @@
 
   (clear-lines [buffer]
 
-    "Sets all lines of the given buffer to false.")
+    "Sets all lines of the given buffer to LOW (false).")
 
 
   (get-line [buffer tag]
@@ -457,7 +529,9 @@
   (get-lines [buffer]
              [buffer tags]
 
-    "Retrieves the state of several lines (or all of them if nothing is specified) from the given buffer.")
+    "Retrieves the state of several lines (or all of them if nothing is specified) from the given buffer.
+    
+     Returns a map of tag -> state.")
 
 
   (set-line [buffer tag state]
@@ -621,12 +695,11 @@
 
 (defprotocol IHandle
 
-  "IO using a GPIO handle and a buffer.
+  "IO using a GPIO handle and a associated buffer.
 
-   Reading or writing the state of lines happens virtually at once for all of them.
-   Whether it happens exactly at the same time depends on the underlying driver and
-   this fact is opaque. In any case, driving several lines using a single handle is
-   more efficient than using a handle for each line."
+   Reading or writing the state of lines happens virtually at once for all of them. Whether it happens exactly
+   at the same time depends on the underlying driver and this fact is opaque. In any case, driving several
+   lines using a single handle is more efficient than using a handle for each line."
 
   (read [handle buffer]
 
@@ -681,10 +754,27 @@
 
 (defn handle
 
-  "Given a GPIO device, requests a handle for one or several lines which can
-   then be used to read and/or write the state of lines.
+  "Given a GPIO device, requests a handle for one or several lines which can then be used to read and/or write
+   the state of lines.
   
    Implements `IHandle`.
+
+
+   `line-number->line-options` is a map where keys are line numbers and values are maps which may contain :
+
+     ::state
+     ::tag
+       Cf. Namespace description
+
+
+   `handle-options` is an optional map which may contain :
+
+     ::active-low?
+     ::consumer
+     ::direction
+     ::open-drain?
+     ::open-source?
+       Cf. Namespace description
   
 
    Ex. (handle some-device
@@ -855,6 +945,18 @@
    their current values.
   
    Implements `IWatcher`.
+
+
+   `line-number->watch-options` is a map where keys are line numbers and values are maps which may contain :
+
+     ::active-low?
+     ::consumer
+     ::direction
+     ::open-drain?
+     ::open-source?
+     ::state
+     ::tag
+       Cf. Namespace description
 
 
    Ex. (watcher some-device
