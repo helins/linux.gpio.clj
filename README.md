@@ -20,7 +20,7 @@ For information about running Clojure on the Raspberry Pi, here is a
 ## Usage
 
 Read the
-[API](https://dvlopt.github.io/doc/clojure/dvlopt/linux.gpio/index.html). The
+[API](https://cljdoc.org/d/dvlopt/linux.gpio/1.0.0/api/dvlopt.linux.gpio). The
 namespace description summerizes everything there is to know.
 
 You might want to have a look at the [examples](./examples).
