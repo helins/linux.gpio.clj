@@ -1,13 +1,15 @@
-(ns dvlopt.linux.gpio.examples
+;; This Source Code Form is subject to the terms of the Mozilla Public
+;; License, v. 2.0. If a copy of the MPL was not distributed with this
+;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+
+(ns helins.linux.gpio.example
 
   "Various GPIO examples."
 
   {:author "Adam Helinski"}
 
-  (:require [dvlopt.linux.gpio :as gpio])
-  (:import java.lang.AutoCloseable))
-
-
+  (:require [helins.linux.gpio :as gpio]))
 
 
 ;;;;;;;;;;
@@ -36,15 +38,15 @@
                   :or   {device      0
                          interval-ms 500}}]
 
-   (with-open [^AutoCloseable device' (gpio/device device)
-               ^AutoCloseable handle  (gpio/handle device'
-                                                   (reduce (fn add-led [line-number->line-options line-number]
-                                                             (assoc line-number->line-options
-                                                                    line-number
-                                                                    {::gpio/state false}))
-                                                           {}
-                                                           line-numbers)
-                                                   {::gpio/direction :output})]
+   (with-open [device' (gpio/device device)
+               handle  (gpio/handle device'
+                                    (reduce (fn add-led [line-number->line-options line-number]
+                                              (assoc line-number->line-options
+                                                     line-number
+                                                     {::gpio/state false}))
+                                            {}
+                                            line-numbers)
+                                    {::gpio/direction :output})]
      (let [buffer (gpio/buffer handle)]
        (loop [line-numbers' (cycle line-numbers)]
          (gpio/write handle
@@ -77,15 +79,15 @@
                   :or   {device     0
                          timeout-ms 10000}}]
 
-   (with-open [^AutoCloseable device' (gpio/device  device)
-               ^AutoCloseable watcher (gpio/watcher device'
-                                                    (reduce (fn add-button [line-number->watch-options line-number]
-                                                              (assoc line-number->watch-options
-                                                                     line-number
-                                                                     {::gpio/edge-detection :falling
-                                                                      ::gpio/direction      :input}))
-                                                            {}
-                                                            line-numbers))]
+   (with-open [ device' (gpio/device  device)
+                watcher (gpio/watcher device'
+                                      (reduce (fn add-button [line-number->watch-options line-number]
+                                                (assoc line-number->watch-options
+                                                       line-number
+                                                       {::gpio/edge-detection :falling
+                                                        ::gpio/direction      :input}))
+                                              {}
+                                              line-numbers))]
      (while true
        (println (if-some [event (gpio/event watcher
                                             timeout-ms)]

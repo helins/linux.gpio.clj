@@ -1,4 +1,4 @@
-(ns dvlopt.linux.gpio
+(ns helins.linux.gpio
 
   "This namespace provides utilities for handling a GPIO device. Compatible with Linux 4.8 and higher.
 
@@ -64,9 +64,8 @@
 
   {:author "Adam Helinski"}
 
-  (:refer-clojure :exclude [read])
-  (:require [dvlopt.void :as void])
-  (:import (io.dvlopt.linux.gpio GpioBuffer
+  (:require [helins.void :as void])
+  (:import (io.helins.linux.gpio GpioBuffer
                                  GpioChipInfo
                                  GpioDevice
                                  GpioEdgeDetection
@@ -79,7 +78,8 @@
                                  GpioFlags
                                  GpioLine
                                  GpioLineInfo)
-           java.lang.AutoCloseable))
+           java.lang.AutoCloseable)
+  (:refer-clojure :exclude [read]))
 
 
 
@@ -155,9 +155,9 @@
   [^GpioDevice device]
 
   (let [info (.requestChipInfo device)]
-    (void/assoc-some {::n-lines (.getLines info)}
-                     ::label (.getLabel info)
-                     ::name  (.getName  info))))
+    (void/assoc {::n-lines (.getLines info)}
+                ::label (.getLabel info)
+                ::name  (.getName  info))))
 
 
 
@@ -189,16 +189,16 @@
   (let [info  (.requestLineInfo device
                                 line-number)
         flags (.getFlags info)]
-    (void/assoc-some {::active-low?  (.isActiveLow flags)
-                      ::direction    (if (.isInput flags)
-                                       :input
-                                       :output)
-                      ::line-number  (.getLine info)
-                      ::open-drain?  (.isOpenDrain flags)
-                      ::open-source? (.isOpenSource flags)
-                      ::used?        (.isUsed info)}
-                     ::consumer (.getConsumer info)
-                     ::name     (.getName info))))
+    (void/assoc {::active-low?  (.isActiveLow flags)
+                 ::direction    (if (.isInput flags)
+                                  :input
+                                  :output)
+                 ::line-number  (.getLine info)
+                 ::open-drain?  (.isOpenDrain flags)
+                 ::open-source? (.isOpenSource flags)
+                 ::used?        (.isUsed info)}
+                ::consumer (.getConsumer info)
+                ::name     (.getName info))))
 
 
 
@@ -545,9 +545,10 @@
   (.requestEvent device
                  (let [req (GpioEventRequest. line-number
                                               (condp identical?
-                                                     (void/obtain ::edge-detection
-                                                                  event-handle-options
-                                                                  defaults)
+                                                     (or (get event-handle-options
+                                                              ::edge-detection)
+                                                         (get defaults
+                                                              ::edge-detection))
                                                 :rising             GpioEdgeDetection/RISING
                                                 :falling            GpioEdgeDetection/FALLING
                                                 :rising-and-falling GpioEdgeDetection/RISING_AND_FALLING)

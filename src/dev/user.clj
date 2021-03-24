@@ -1,20 +1,17 @@
+;; This Source Code Form is subject to the terms of the Mozilla Public
+;; License, v. 2.0. If a copy of the MPL was not distributed with this
+;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+
 (ns user
 
-  "For daydreaming in the repl."
+  "For daydreaming at the REPL."
 
-  (:require [clojure.spec.alpha              :as s]
-            [clojure.spec.gen.alpha          :as gen]
-            [clojure.spec.test.alpha         :as st]
-            [clojure.test.check.clojure-test :as tt]
-            [clojure.test.check.generators   :as tgen]
-            [clojure.test.check.properties   :as tprop]
-            [clojure.test                    :as t]
-            [criterium.core                  :as ct]
-            [dvlopt.linux.gpio               :as gpio]
-            [dvlopt.linux.gpio.examples      :as gpio.examples]
-            [dvlopt.void                     :as void])
+  (:require [helins.linux.gpio         :as gpio]
+            [helins.linux.gpio.example :as gpio.example]
+            [helins.void               :as void])
   (:import com.sun.jna.Memory
-           (io.dvlopt.linux.gpio GpioBuffer
+           (io.helins.linux.gpio GpioBuffer
                                  GpioChipInfo
                                  GpioDevice
                                  GpioEdgeDetection
@@ -27,19 +24,18 @@
                                  GpioHandleRequest
                                  GpioLine
                                  GpioLineInfo)
-           (io.dvlopt.linux.gpio.internal NativeGpioChipInfo
+           (io.helins.linux.gpio.internal NativeGpioChipInfo
                                           NativeGpioHandleRequest
                                           NativeGpioEventData
                                           NativeGpioEventRequest
                                           NativeGpioLineInfo)))
 
 
-
-
 ;;;;;;;;;;
 
 
 (comment
+
 
 
   )

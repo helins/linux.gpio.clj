@@ -1,0 +1,32 @@
+{:aliases
+ {:deploy
+  {:exec-args  {:artifact  "release.jar"
+                :installer :remote}
+   :exec-fn    deps-deploy.deps-deploy/deploy
+   :extra-deps {slipset/deps-deploy {:mvn/version "0.1.5"}}}
+
+  :dev
+  {:extra-deps  {org.clojure/test.check {:mvn/version "1.1.0"}}
+   :extra-paths ["src/dev"
+                 "src/example"]}
+
+  :jar
+  {:exec-args    {:jar      "release.jar"
+                  :sync-pom true}
+   :exec-fn      hf.depstar/jar
+   :replace-deps {seancorfield/depstar {:mvn/version "2.0.171"}}}
+
+  :install
+  {:exec-args  {:artifact  "release.jar"
+                :installer :local}
+   :exec-fn    deps-deploy.deps-deploy/deploy
+   :extra-deps {slipset/deps-deploy {:mvn/version "0.1.5"}}}}
+
+
+ :deps
+ {io.helins/linux-gpio {:mvn/version "1.0.1"}
+  io.helins/void       {:mvn/version "1.0.2"}}
+
+
+ :paths
+ ["src/main"]}

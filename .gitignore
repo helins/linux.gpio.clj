@@ -1,62 +1,30 @@
-# dev namespaces
-/dev/*
-!/dev/user.clj
-
-# Codox
-/doc/auto
-
 /target
 /classes
 /checkouts
-pom.xml
-pom.xml.asc
 *.jar
 *.class
+/.cpcache
 /.lein-*
+/.nrepl-history
 /.nrepl-port
 .hgignore
 .hg/
+.rebel_readline_history
 
+// For running kaocha-cljs
 
-# Created by https://www.gitignore.io/api/clojure,linux,vim
+.cljs_node_repl/
+node_modules/
+out
 
-### Clojure ###
-pom.xml
-pom.xml.asc
-*.jar
-*.class
-/lib/
-/classes/
-/target/
-/checkouts/
-.lein-deps-sum
-.lein-repl-history
-.lein-plugins/
-.lein-failures
-.nrepl-port
+// Shadow-cljs
+.cljs
+.shadow-cljs/
+node_modules/
+out
+package.json
 
-
-### Linux ###
-*~
-
-# temporary files which can be created if a process still has a handle open of a deleted file
-.fuse_hidden*
-
-# KDE directory preferences
-.directory
-
-# Linux trash folder which might appear on any partition or disk
-.Trash-*
-
-
-### Vim ###
-# swap
-[._]*.s[a-w][a-z]
-[._]s[a-w][a-z]
-# session
-Session.vim
-# temporary
-.netrwhist
-*~
-# auto-generated tag files
-tags
+/resources/public/*
+!/resources/public/index.html
+/resources/chui/*
+!/resources/chui/index.html

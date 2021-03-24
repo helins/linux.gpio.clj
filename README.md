@@ -67,5 +67,4 @@ For instance :
 
 Copyright © 2018 Adam Helinski
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Licensed under the term of the Mozilla Public License 2.0, see LICENSE.
