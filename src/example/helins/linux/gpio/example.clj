@@ -32,30 +32,29 @@
                      nil))
 
 
-  ([line-numbers {:as   options
-                  :keys [device
-                         interval-ms]
-                  :or   {device      0
-                         interval-ms 500}}]
+  ([line-numbers param+]
 
-   (with-open [device' (gpio/device device)
-               handle  (gpio/handle device'
-                                    (reduce (fn add-led [line-number->line-options line-number]
-                                              (assoc line-number->line-options
-                                                     line-number
-                                                     {:gpio/state false}))
-                                            {}
-                                            line-numbers)
-                                    {:gpio/direction :output})]
-     (let [buffer (gpio/buffer handle)]
-       (loop [line-numbers' (cycle line-numbers)]
-         (gpio/write handle
-                     (-> buffer
-                         gpio/clear-lines
-                         (gpio/set-line (first line-numbers')
-                                        true)))
-         (Thread/sleep interval-ms)
-         (recur (rest line-numbers')))))))
+   (let [interval-ms (or (:interval-ms param+)
+                         500)]
+     (with-open [device (gpio/device (or (:device param+)
+                                         0))
+                 handle (gpio/handle device
+                                     (reduce (fn add-led [line-number->line-options line-number]
+                                               (assoc line-number->line-options
+                                                      line-number
+                                                      {:gpio/state false}))
+                                             {}
+                                             line-numbers)
+                                     {:gpio/direction :output})]
+       (let [buffer (gpio/buffer handle)]
+         (loop [line-numbers' (cycle line-numbers)]
+           (gpio/write handle
+                       (-> buffer
+                           gpio/clear-line+
+                           (gpio/set-line (first line-numbers')
+                                          true)))
+           (Thread/sleep interval-ms)
+           (recur (rest line-numbers'))))))))
 
 
 
@@ -73,25 +72,24 @@
                  nil))
 
 
-  ([line-numbers {:as   options
-                  :keys [device
-                         timeout-ms]
-                  :or   {device     0
-                         timeout-ms 10000}}]
+  ([line-numbers param+]
 
-   (with-open [ device' (gpio/device  device)
-                watcher (gpio/watcher device'
-                                      (reduce (fn add-button [line-number->watch-options line-number]
-                                                (assoc line-number->watch-options
-                                                       line-number
-                                                       {:gpio/edge-detection :falling
-                                                        :gpio/direction      :input}))
-                                              {}
-                                              line-numbers))]
-     (while true
-       (println (if-some [event (gpio/event watcher
-                                            timeout-ms)]
-                  (format "%d  Button for line %d has been pressed"
-                          (:gpio/nano-timestamp event)
-                          (:gpio/tag event))
-                  "Timeout !"))))))
+   (let [timeout-ms (or (:timeout-ms param+)
+                        10000)]
+     (with-open [device  (gpio/device  (or (:device param+)
+                                           0))
+                 watcher (gpio/watcher device
+                                       (reduce (fn add-button [line-number->watch-options line-number]
+                                                 (assoc line-number->watch-options
+                                                        line-number
+                                                        {:gpio/edge-detection :falling
+                                                         :gpio/direction      :input}))
+                                               {}
+                                               line-numbers))]
+       (while true
+         (println (if-some [event (gpio/event watcher
+                                              timeout-ms)]
+                    (format "%d  Button for line %d has been pressed"
+                            (:gpio/nano-timestamp event)
+                            (:gpio/tag event))
+                    "Timeout !")))))))

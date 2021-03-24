@@ -2,7 +2,7 @@
 
   "This namespace provides utilities for handling a GPIO device. Compatible with Linux 4.8 and higher.
 
-   Access to a GPIO device can be obtained by using the `device` function. Three things can then be accomplished :
+   Access to a GPIO device can be obtained by using the `device` function. Three things can then be accomplished 
 
        - Request some information about the GPIO device or a specific GPIO line.
        - Request a handle for driving one or several lines at once.
@@ -66,37 +66,29 @@
 
   (:require [helins.void :as void])
   (:import (io.helins.linux.gpio GpioBuffer
-                                 GpioChipInfo
                                  GpioDevice
                                  GpioEdgeDetection
                                  GpioEvent
                                  GpioEventHandle
                                  GpioEventRequest
                                  GpioEventWatcher
-                                 GpioHandle
                                  GpioHandleRequest
-                                 GpioFlags
-                                 GpioLine
-                                 GpioLineInfo)
+                                 GpioFlags)
            java.lang.AutoCloseable)
   (:refer-clojure :exclude [read]))
-
-
 
 
 ;;;;;;;;;; Default values for options
 
 
-(def defaults
+(def default+
 
   "Default values for argument options."
 
   {:gpio/edge-detection :rising-and-falling})
 
 
-
-
-;;;;;;;;;;
+;;;;;;;;;; Open, close, and describe a GPIO device
 
 
 (defn close
@@ -110,10 +102,6 @@
   (.close resource)
   nil)
 
-
-
-
-;;;;;;;;;;
 
 
 (defn device
@@ -133,7 +121,6 @@
   (if (number? device-path)
     (GpioDevice. ^int device-path)
     (GpioDevice. ^String device-path)))
-
 
 
 
@@ -158,7 +145,6 @@
     (void/assoc {:gpio/n-lines (.getLines info)}
                 :gpio/label (.getLabel info)
                 :gpio/name  (.getName  info))))
-
 
 
 
@@ -191,8 +177,8 @@
         flags (.getFlags info)]
     (void/assoc {:gpio/active-low?  (.isActiveLow flags)
                  :gpio/direction    (if (.isInput flags)
-                                  :input
-                                  :output)
+                                      :input
+                                      :output)
                  :gpio/line-number  (.getLine info)
                  :gpio/open-drain?  (.isOpenDrain flags)
                  :gpio/open-source? (.isOpenSource flags)
@@ -201,9 +187,7 @@
                 :gpio/name     (.getName info))))
 
 
-
-
-;;;;;;;;;;
+;;;;;;;;;; Private helpers
 
 
 (defn- -flags
@@ -212,41 +196,25 @@
   
   ^GpioFlags
 
-  [options]
+  [option+]
 
   (let [^GpioFlags flags (GpioFlags.)]
-    (when (:gpio/active-low? options)
+    (when (:gpio/active-low? option+)
       (.setActiveLow flags
                      true))
-    (when-some [direction (:gpio/direction options)]
+    (when-some [direction (:gpio/direction option+)]
       (condp identical?
              direction
         :input  (.setInput  flags)
         :output (.setOutput flags)))
-    (when (:gpio/open-drain? options)
+    (when (:gpio/open-drain? option+)
       (.setOpenDrain flags
                      true))
-    (when (:gpio/open-source? options)
+    (when (:gpio/open-source? option+)
       (.setOpenSource flags
                       true))
     flags))
 
-
-
-
-;;;;;;;;;;
-
-
-(defprotocol ^:private IPure
-
-  ;; Retrieves the raw Java type from the original library.
-
-  (^:private -raw-type [this]))
-
-
-
-
-;;;;;;;;;;
 
 
 (defn- -get-gpio-line
@@ -265,6 +233,15 @@
 
 
 
+(defprotocol ^:private IPure
+
+  ;; Retrieves the raw Java type from the original library.
+
+  (^:private -raw-type [this]))
+
+
+;;;;;;;;;; GPIO buffers
+
 
 (defprotocol IBuffereable
 
@@ -281,18 +258,17 @@
 
 
 
-
 (defprotocol IBuffer
 
   "Reading or writing the state of lines in a buffer before or after doing some IO.
   
    Ex. (write some-handle
               (-> some-buffer
-                  (clear-lines)
-                  (set-lines {:green-led true
+                  (clear-line+)
+                  (set-line+ {:green-led true
                               :red-led   false})))"
 
-  (clear-lines [buffer]
+  (clear-line+ [buffer]
 
     "Sets all lines of the given buffer to LOW (false).")
 
@@ -302,7 +278,7 @@
     "Retrieves the state of a single line from the given buffer.")
 
 
-  (get-lines [buffer]
+  (get-line+ [buffer]
              [buffer tags]
 
     "Retrieves the state of several lines (or all of them if nothing is specified) from the given buffer.
@@ -315,7 +291,7 @@
     "Sets the state of a single line in the given buffer.")
 
 
-  (set-lines [buffer tag->state]
+  (set-line+ [buffer tag->state]
 
     "Sets the state of several lines in the given buffer.")
 
@@ -325,11 +301,10 @@
     "Toggles the state of a single line in the given buffer.")
 
 
-  (toggle-lines [buffer]
+  (toggle-line+ [buffer]
                 [buffer tags]
 
     "Toggles the state of several lines in the given buffer."))
-
 
 
 
@@ -344,7 +319,7 @@
 
       IBuffer
 
-        (clear-lines [this]
+        (clear-line+ [this]
           (.clear gpio-buffer)
           this)
 
@@ -355,12 +330,12 @@
                                 tag)))
 
 
-        (get-lines [this]
-          (get-lines this
+        (get-line+ [this]
+          (get-line+ this
                      (keys tag->GpioLine)))
 
 
-        (get-lines [this tags]
+        (get-line+ [this tags]
           (reduce (fn line-state [tag->state tag]
                     (assoc tag->state
                            tag
@@ -378,7 +353,7 @@
           this)
 
 
-        (set-lines [this tag->state]
+        (set-line+ [this tag->state]
           (doseq [[tag state] tag->state]
             (set-line this
                       tag
@@ -394,12 +369,12 @@
           this)
 
 
-        (toggle-lines [this]
-          (toggle-lines this
+        (toggle-line+ [this]
+          (toggle-line+ this
                         (keys tag->GpioLine)))
 
 
-        (toggle-lines [this tags]
+        (toggle-line+ [this tags]
           (doseq [tag tags]
             (toggle-line this
                          tag))
@@ -413,9 +388,7 @@
      )))
 
 
-
-
-;;;;;;;;;;
+;;;;;;;;;; GPIO handles
 
 
 (defprotocol IHandle
@@ -437,7 +410,6 @@
 
 
 
-
 (defn handle
 
   "Given a GPIO device, requests a handle for one or several lines which can then be used to read and/or write
@@ -446,14 +418,14 @@
    Implements `IHandle`.
 
 
-   `line-number->line-options` is a map where keys are line numbers and values are maps which may contain :
+   `line-number->line-option+` is a map where keys are line numbers and values are maps which may contain :
 
      :gpio/state
      :gpio/tag
        Cf. Namespace description
 
 
-   `handle-options` is an optional map which may contain :
+   `handle-option+` is an optional map which may contain :
 
      :gpio/active-low?
      :gpio/consumer
@@ -471,35 +443,35 @@
 
   (^AutoCloseable
 
-   [device lines-number->line-options]
+   [device lines-number->line-option+]
 
    (handle device
-           lines-number->line-options
+           lines-number->line-option+
            nil))
 
 
   (^AutoCloseable
     
-   [^GpioDevice device line-number->line-options handle-options]
+   [^GpioDevice device line-number->line-option+ handle-option+]
 
    (let [req           (GpioHandleRequest.)
-         tag->GpioLine (reduce-kv (fn add-tag [tag->GpioLine line-number line-options]
+         tag->GpioLine (reduce-kv (fn add-tag [tag->GpioLine line-number line-option+]
                                     (assoc tag->GpioLine
-                                           (get line-options
+                                           (get line-option+
                                                 :gpio/tag
                                                 line-number)
-                                           (if (:gpio/state line-options)
+                                           (if (:gpio/state line-option+)
                                              (.addLine req
                                                        line-number
                                                        true)
                                              (.addLine req
                                                        line-number))))
                                   {}
-                                  line-number->line-options)]
-     (some->> (:gpio/consumer handle-options)
+                                  line-number->line-option+)]
+     (some->> (:gpio/consumer handle-option+)
               (.setConsumer req))
      (.setFlags req
-                (-flags handle-options))
+                (-flags handle-option+))
      (let [gpio-handle (.requestHandle device
                                        req)]
        (reify
@@ -529,9 +501,7 @@
           )))))
 
 
-
-
-;;;;;;;;;;
+;;;;;;;;;; Watching GPIO events
 
 
 (defn- -event-handle
@@ -540,24 +510,23 @@
 
   ^GpioEventHandle
 
-  [^GpioDevice device line-number event-handle-options]
+  [^GpioDevice device line-number event-handle-option+]
 
   (.requestEvent device
                  (let [req (GpioEventRequest. line-number
                                               (condp identical?
-                                                     (or (get event-handle-options
+                                                     (or (get event-handle-option+
                                                               :gpio/edge-detection)
-                                                         (get defaults
+                                                         (get default+
                                                               :gpio/edge-detection))
                                                 :rising             GpioEdgeDetection/RISING
                                                 :falling            GpioEdgeDetection/FALLING
                                                 :rising-and-falling GpioEdgeDetection/RISING_AND_FALLING)
-                                              (-flags event-handle-options))]
+                                              (-flags event-handle-option+))]
 
-                   (some->> (:gpio/consumer event-handle-options)
+                   (some->> (:gpio/consumer event-handle-option+)
                             (.setConsumer req))
                    req)))
-
 
 
 
@@ -580,7 +549,6 @@
 
 
 
-
 (defn- -close-watcher-resources
 
   ;; Closes all resources related to a watcher.
@@ -593,7 +561,6 @@
 
 
 
-
 (defn watcher
 
   "Given a GPIO device, produces a watcher which can then be used to efficiently monitor inputs for changes or poll
@@ -602,7 +569,7 @@
    Implements `IWatcher`.
 
 
-   `line-number->watch-options` is a map where keys are line numbers and values are maps which may contain :
+   `line-number->watch-option+` is a map where keys are line numbers and values are maps which may contain :
 
      :gpio/active-low?
      :gpio/consumer
@@ -622,25 +589,25 @@
 
   ^AutoCloseable
 
-  [^GpioDevice device line-number->watch-options]
+  [^GpioDevice device line-number->watch-option+]
 
   (let [gpio-watcher      (GpioEventWatcher.)
-        tag->event-handle (reduce-kv (fn event-handle [tag->event-handle line-number watch-options]
+        tag->event-handle (reduce-kv (fn event-handle [tag->event-handle line-number watch-option+]
                                        (try
                                          (assoc tag->event-handle
-                                                (if (contains? watch-options
+                                                (if (contains? watch-option+
                                                                :gpio/tag)
-                                                  (:gpio/tag watch-options)
+                                                  (:gpio/tag watch-option+)
                                                   line-number)
                                                 (-event-handle device
                                                                line-number
-                                                               watch-options))
+                                                               watch-option+))
                                          (catch Throwable e
                                            (-close-watcher-resources gpio-watcher
                                                                      tag->event-handle)
                                            (throw e))))
                                      {}
-                                     line-number->watch-options)
+                                     line-number->watch-option+)
         line-number->tag (reduce-kv (fn add-event-handle [line-number->tag tag ^GpioEventHandle event-handle]
                                       (try
                                         (let [line-number (.-lineNumber (.getLine event-handle))]
@@ -706,6 +673,4 @@
                                 :falling)
              :gpio/nano-timestamp (.getNanoTimestamp gpio-event)
              :gpio/tag            (get line-number->tag
-                                   (.getId gpio-event))}))
-      )
-    ))
+                                   (.getId gpio-event))})))))

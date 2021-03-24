@@ -10,6 +10,12 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Pluralization convention:
+    - defaults     -> default+
+    - clear-lines  -> clear-line+
+    - get-lines    -> get-line+
+    - set-lines    -> set-line+
+    - toggle-lines -> toggle-line+
 - Namespace parameters under "gpio"
 - Relicensed under MPL 2.0
 - Renamed group id from "dvlopt" to "io.helins"
