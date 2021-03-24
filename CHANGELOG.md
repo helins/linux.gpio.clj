@@ -10,6 +10,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+### Fixed
+
+
+
+## [2.0.0] - 2021-03-24
+
+### Changed
+
 - Pluralization convention:
     - defaults     -> default+
     - clear-lines  -> clear-line+
@@ -19,8 +27,6 @@ All notable changes to this project will be documented in this file.
 - Namespace parameters under "gpio"
 - Relicensed under MPL 2.0
 - Renamed group id from "dvlopt" to "io.helins"
-
-### Fixed
 
 
 
@@ -43,6 +49,7 @@ All notable changes to this project will be documented in this file.
 - First API iteration with specs
 
 
-[Unreleased]: https://github.com/helins/linux.gpio.clj/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/helins/linux.gpio.clj/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/helins/linux.gpio.clj/compare/1.0.0...2.0.0
 [1.0.0]: https://github.com/helins/linux.gpio.clj/compare/0.0.0...1.0.0
 [0.0.0]: https://github.com/helins/linux.gpio.clj/tree/0.0.0

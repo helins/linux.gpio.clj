@@ -1,9 +1,9 @@
 # Linux.GPIO
 
 [![Clojars
-Project](https://img.shields.io/clojars/v/helins/linux.gpio.svg)](https://clojars.org/helins/linux.gpio)
+Project](https://img.shields.io/clojars/v/io.helins/linux.gpio.svg)](https://clojars.org/io.helins/linux.gpio)
  
-[![cljdoc badge](https://cljdoc.org/badge/helins/linux.gpio)](https://cljdoc.org/d/helins/linux.gpio)
+[![cljdoc badge](https://cljdoc.org/badge/io.helins/linux.gpio)](https://cljdoc.org/d/io.helins/linux.gpio)
 
 Handle [GPIO](https://github.com/helins/linux-gpio.java) lines in a fast and
 portable way from Clojure.
@@ -26,7 +26,7 @@ Compatible with Linux 4.8 and higher, tested on the Raspberry Pi 3.
 
 This is a very brief overview.
 
-The [full API is available on Cljdoc](https://cljdoc.org/d/helins/linux.gpio/1.0.0/api/helins.linux.gpio).
+The [full API is available on Cljdoc](https://cljdoc.org/d/io.helins/linux.gpio/1.0.0/api/helins.linux.gpio).
 
 Small examples are available in the [helins.linux.gpio.example](../main/src/example/helins/linux/gpio/example.clj).
 
@@ -48,13 +48,13 @@ For instance :
 
 (with-open [device         (gpio/device "/dev/gpiochip0")
             led-handle     (gpio/handle device
-                                        {17 {::gpio/state false
-                                             ::gpio/tag   :led-1}
-                                         18 {::gpio/state true
-                                             ::gpio/tag   :led-2}}
+                                        {17 {:gpio/state false
+                                             :gpio/tag   :led-1}
+                                         18 {:gpio/state true
+                                             :gpio/tag   :led-2}}
                                         {::gpio/direction :output})
             button-watcher (gpio/watcher device
-                                         {22 {::gpio/direction :input}})]
+                                         {22 {:gpio/direction :input}})]
   (let [buffer (gpio/buffer led-handle)]
     (loop [leds (cycle [:led-1
                         :led-2])]
