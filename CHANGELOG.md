@@ -14,6 +14,14 @@ All notable changes to this project will be documented in this file.
 
 
 
+## [2.0.1] - 2021-03-24
+
+### Changed
+
+- Modernized docstrings for Cljdoc
+
+
+
 ## [2.0.0] - 2021-03-24
 
 ### Changed
@@ -49,7 +57,8 @@ All notable changes to this project will be documented in this file.
 - First API iteration with specs
 
 
-[Unreleased]: https://github.com/helins/linux.gpio.clj/compare/2.0.0...HEAD
+[Unreleased]: https://github.com/helins/linux.gpio.clj/compare/2.0.1...HEAD
+[2.0.1]: https://github.com/helins/linux.gpio.clj/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/helins/linux.gpio.clj/compare/1.0.0...2.0.0
 [1.0.0]: https://github.com/helins/linux.gpio.clj/compare/0.0.0...1.0.0
 [0.0.0]: https://github.com/helins/linux.gpio.clj/tree/0.0.0

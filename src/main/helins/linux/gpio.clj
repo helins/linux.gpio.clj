@@ -2,11 +2,11 @@
 
   "This namespace provides utilities for handling a GPIO device. Compatible with Linux 4.8 and higher.
 
-   Access to a GPIO device can be obtained by using the `device` function. Three things can then be accomplished 
+   Access to a GPIO device can be obtained by using the `device` function. Three things can then be accomplished:
 
-       - Request some information about the GPIO device or a specific GPIO line.
-       - Request a handle for driving one or several lines at once.
-       - Request a watcher for efficiently monitoring one or several lines.
+   - Request some information about the GPIO device or a specific GPIO line.
+   - Request a handle for driving one or several lines at once.
+   - Request a watcher for efficiently monitoring one or several lines.
 
    A handle controls all the lines it is responsible for at once. Whether those lines are actually driven exactly at
    the same time, atomically, depends on the underlying driver and is opaque to this library. Once a handle is created
@@ -27,40 +27,40 @@
 
    Here is a description of the keywords typically used throughout this library :
 
-    :gpio/active-low?
-      Lines are typically active-high, meaning they become active when HIGH (true) and inactive when LOW (false). Active-low
-      lines reverse this logical flow. They become active when LOW and inactive when HIGH.
+   `:gpio/active-low?`
+   Lines are typically active-high, meaning they become active when HIGH (true) and inactive when LOW (false). Active-low
+   lines reverse this logical flow. They become active when LOW and inactive when HIGH.
 
-    :gpio/consumer
-      An arbitrary string can be supplied when creating a handle. If a line is in use and associated with a consumer, it will
-      show up when querying its state using `describe-line`. It allows for tracking who is using what.
+   `:gpio/consumer`
+   An arbitrary string can be supplied when creating a handle. If a line is in use and associated with a consumer, it will
+   show up when querying its state using `describe-line`. It allows for tracking who is using what.
 
-    :gpio/direction
-      A line can either be used as :input or :output, never both at the same time. All lines associated
-      with a handle must be of the same direction.
+   `:gpio/direction`
+   A line can either be used as :input or :output, never both at the same time. All lines associated
+   with a handle must be of the same direction.
 
-    :gpio/label
-      The operating system might associate a GPIO device and individual lines with string labels.
+   `:gpio/label`
+   The operating system might associate a GPIO device and individual lines with string labels.
 
-    :gpio/line-number
-      A single GPIO device can represent at most 64 lines. Hence, a line number is between 0 and 63 inclusive.
+   `:gpio/line-number`
+   A single GPIO device can represent at most 64 lines. Hence, a line number is between 0 and 63 inclusive.
 
-    :gpio/name
-      The operating system might associate a GPIO device and individual lines with string names.
+   `:gpio/name`
+   The operating system might associate a GPIO device and individual lines with string names.
 
-    :gpio/open-drain?
-      Lines can act as open drains (ie. can only be driven to LOW).
+   `:gpio/open-drain?`
+   Lines can act as open drains (ie. can only be driven to LOW).
 
-    :gpio/open-source?
-      Lines can be open sources (ie. can only be driven to HIGH).
+   `:gpio/open-source?`
+   Lines can be open sources (ie. can only be driven to HIGH).
 
-    :gpio/state
-      The state of a line can either be logical HIGH (true) or logical LOW (false).
+   `:gpio/state`
+   The state of a line can either be logical HIGH (true) or logical LOW (false).
 
-    :gpio/tag
-      Instead of using raw line numbers which don't really mean anything, they can be associated with any value such
-      as a string or a keyword. Besides being more descriptive, the program remains valid when the user dedices to use
-      different lines while creating a handle (as long as tags remain the same)."
+   `:gpio/tag`
+   Instead of using raw line numbers which don't really mean anything, they can be associated with any value such
+   as a string or a keyword. Besides being more descriptive, the program remains valid when the user dedices to use
+   different lines while creating a handle (as long as tags remain the same)."
 
   {:author "Adam Helinski"}
 
@@ -128,21 +128,18 @@
 
   "Requests a description of the given GPIO device.
   
-   Returns a map containing :
+   Returns a map such as:
 
-     :gpio/label (optional)
-       Cf. Namespace description
-
-     :gpio/n-lines
-       Number of available lines for that chip.
-
-     :gpio/name (optional)
-       Cf. Namespace description."
+   | Key | Optional? | Description |
+   |---|---|---|
+   | :gpio/label | True | See namespace description |
+   | :gpio/n-line | False | Number of available lines for that chip |
+   | :gpio/name | True | See namespace description |"
 
   [^GpioDevice device]
 
   (let [info (.requestChipInfo device)]
-    (void/assoc {:gpio/n-lines (.getLines info)}
+    (void/assoc {:gpio/n-line (.getLines info)}
                 :gpio/label (.getLabel info)
                 :gpio/name  (.getName  info))))
 
@@ -152,23 +149,18 @@
 
   "Requests a description of the given line.
   
-   Returns a map which may contain :
+   Returns a map such as:
 
-     :gpio/active-low?
-     :gpio/consumer (optional)
-     :gpio/direction
-       Cf. Namespace description
-
-     :gpio/line-number
-       Number of the line.
-
-     :gpio/name (optional)
-     :gpio/open-drain?
-     :gpio/open-source?
-       Cf. Namespace description
-
-     :gpio/used?
-       Is this line currently in use ?"
+   | Key | Optional? | Description |
+   |---|---|---|
+   | :gpio/active-low? | False | See namespace description |
+   | :gpio/consumer | True | See namespace description |
+   | :gpio/direction | False | See namespace description |
+   | :gpio/line-number | False | Number of the described line |
+   | :gpio/name | True | See namespace description |
+   | :gpio/open-drain? | False | See namespace description |
+   | :gpio/open-source? | False | See namespace description |
+   | :gpio/used? | False | Is this line currently in use? |"
 
   [^GpioDevice device line-number]
 
@@ -262,11 +254,13 @@
 
   "Reading or writing the state of lines in a buffer before or after doing some IO.
   
-   Ex. (write some-handle
-              (-> some-buffer
-                  (clear-line+)
-                  (set-line+ {:green-led true
-                              :red-led   false})))"
+   ```clojure
+   (write some-handle
+          (-> some-buffer
+              (clear-line+)
+              (set-line+ {:green-led true
+                          :red-led   false})))
+   ```"
 
   (clear-line+ [buffer]
 
@@ -418,28 +412,30 @@
    Implements `IHandle`.
 
 
-   `line-number->line-option+` is a map where keys are line numbers and values are maps which may contain :
+   `line-number->line-option+` is a map of `line number` -> `description map` containing: 
 
-     :gpio/state
-     :gpio/tag
-       Cf. Namespace description
+   - :gpio/state
+   - :gpio/tag
 
 
    `handle-option+` is an optional map which may contain :
 
-     :gpio/active-low?
-     :gpio/consumer
-     :gpio/direction
-     :gpio/open-drain?
-     :gpio/open-source?
-       Cf. Namespace description
-  
+   -  :gpio/active-low?
+   -  :gpio/consumer
+   -  :gpio/direction
+   -  :gpio/open-drain?
+   -  :gpio/open-source?
 
-   Ex. (handle some-device
-               {17 {:gpio/tag :red-led}
-                27 {:gpio/tag   :green-led
-                    :gpio/state true}}
-               {:gpio/direction :output})"
+   See namespace docstring for description.
+
+
+   ```clojure
+   (handle some-device
+           {17 {:gpio/tag :red-led}
+            27 {:gpio/tag   :green-led
+                :gpio/state true}}
+           {:gpio/direction :output})
+   ```"
 
   (^AutoCloseable
 
@@ -569,23 +565,26 @@
    Implements `IWatcher`.
 
 
-   `line-number->watch-option+` is a map where keys are line numbers and values are maps which may contain :
+   `line-number->watch-option+` is a map of `line number` -> `description map` which may contain :
 
-     :gpio/active-low?
-     :gpio/consumer
-     :gpio/direction
-     :gpio/open-drain?
-     :gpio/open-source?
-     :gpio/state
-     :gpio/tag
-       Cf. Namespace description
+   - :gpio/active-low?
+   - :gpio/consumer
+   - :gpio/direction
+   - :gpio/open-drain?
+   - :gpio/open-source?
+   - :gpio/state
+   - :gpio/tag
+   
+   See namespace docstring for description.
 
 
-   Ex. (watcher some-device
-                {18 {:gpio/tag       :left-button
-                     :gpio/direction :input}
-                 23 {:gpio/tag       :right-button
-                     :gpio/direction :output}})"
+   ```clojure
+   (watcher some-device
+            {18 {:gpio/tag       :left-button
+                 :gpio/direction :input}
+             23 {:gpio/tag       :right-button
+                 :gpio/direction :output}})
+   ```"
 
   ^AutoCloseable
 
