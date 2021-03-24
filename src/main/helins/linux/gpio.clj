@@ -27,37 +27,37 @@
 
    Here is a description of the keywords typically used throughout this library :
 
-    ::active-low?
+    :gpio/active-low?
       Lines are typically active-high, meaning they become active when HIGH (true) and inactive when LOW (false). Active-low
       lines reverse this logical flow. They become active when LOW and inactive when HIGH.
 
-    ::consumer
+    :gpio/consumer
       An arbitrary string can be supplied when creating a handle. If a line is in use and associated with a consumer, it will
       show up when querying its state using `describe-line`. It allows for tracking who is using what.
 
-    ::direction
+    :gpio/direction
       A line can either be used as :input or :output, never both at the same time. All lines associated
       with a handle must be of the same direction.
 
-    ::label
+    :gpio/label
       The operating system might associate a GPIO device and individual lines with string labels.
 
-    ::line-number
+    :gpio/line-number
       A single GPIO device can represent at most 64 lines. Hence, a line number is between 0 and 63 inclusive.
 
-    ::name
+    :gpio/name
       The operating system might associate a GPIO device and individual lines with string names.
 
-    ::open-drain?
+    :gpio/open-drain?
       Lines can act as open drains (ie. can only be driven to LOW).
 
-    ::open-source?
+    :gpio/open-source?
       Lines can be open sources (ie. can only be driven to HIGH).
 
-    ::state
+    :gpio/state
       The state of a line can either be logical HIGH (true) or logical LOW (false).
 
-    ::tag
+    :gpio/tag
       Instead of using raw line numbers which don't really mean anything, they can be associated with any value such
       as a string or a keyword. Besides being more descriptive, the program remains valid when the user dedices to use
       different lines while creating a handle (as long as tags remain the same)."
@@ -91,7 +91,7 @@
 
   "Default values for argument options."
 
-  {::edge-detection :rising-and-falling})
+  {:gpio/edge-detection :rising-and-falling})
 
 
 
@@ -143,21 +143,21 @@
   
    Returns a map containing :
 
-     ::label (optional)
+     :gpio/label (optional)
        Cf. Namespace description
 
-     ::n-lines
+     :gpio/n-lines
        Number of available lines for that chip.
 
-     ::name (optional)
+     :gpio/name (optional)
        Cf. Namespace description."
 
   [^GpioDevice device]
 
   (let [info (.requestChipInfo device)]
-    (void/assoc {::n-lines (.getLines info)}
-                ::label (.getLabel info)
-                ::name  (.getName  info))))
+    (void/assoc {:gpio/n-lines (.getLines info)}
+                :gpio/label (.getLabel info)
+                :gpio/name  (.getName  info))))
 
 
 
@@ -168,20 +168,20 @@
   
    Returns a map which may contain :
 
-     ::active-low?
-     ::consumer (optional)
-     ::direction
+     :gpio/active-low?
+     :gpio/consumer (optional)
+     :gpio/direction
        Cf. Namespace description
 
-     ::line-number
+     :gpio/line-number
        Number of the line.
 
-     ::name (optional)
-     ::open-drain?
-     ::open-source?
+     :gpio/name (optional)
+     :gpio/open-drain?
+     :gpio/open-source?
        Cf. Namespace description
 
-     ::used?
+     :gpio/used?
        Is this line currently in use ?"
 
   [^GpioDevice device line-number]
@@ -189,16 +189,16 @@
   (let [info  (.requestLineInfo device
                                 line-number)
         flags (.getFlags info)]
-    (void/assoc {::active-low?  (.isActiveLow flags)
-                 ::direction    (if (.isInput flags)
+    (void/assoc {:gpio/active-low?  (.isActiveLow flags)
+                 :gpio/direction    (if (.isInput flags)
                                   :input
                                   :output)
-                 ::line-number  (.getLine info)
-                 ::open-drain?  (.isOpenDrain flags)
-                 ::open-source? (.isOpenSource flags)
-                 ::used?        (.isUsed info)}
-                ::consumer (.getConsumer info)
-                ::name     (.getName info))))
+                 :gpio/line-number  (.getLine info)
+                 :gpio/open-drain?  (.isOpenDrain flags)
+                 :gpio/open-source? (.isOpenSource flags)
+                 :gpio/used?        (.isUsed info)}
+                :gpio/consumer (.getConsumer info)
+                :gpio/name     (.getName info))))
 
 
 
@@ -215,18 +215,18 @@
   [options]
 
   (let [^GpioFlags flags (GpioFlags.)]
-    (when (::active-low? options)
+    (when (:gpio/active-low? options)
       (.setActiveLow flags
                      true))
-    (when-some [direction (::direction options)]
+    (when-some [direction (:gpio/direction options)]
       (condp identical?
              direction
         :input  (.setInput  flags)
         :output (.setOutput flags)))
-    (when (::open-drain? options)
+    (when (:gpio/open-drain? options)
       (.setOpenDrain flags
                      true))
-    (when (::open-source? options)
+    (when (:gpio/open-source? options)
       (.setOpenSource flags
                       true))
     flags))
@@ -448,26 +448,26 @@
 
    `line-number->line-options` is a map where keys are line numbers and values are maps which may contain :
 
-     ::state
-     ::tag
+     :gpio/state
+     :gpio/tag
        Cf. Namespace description
 
 
    `handle-options` is an optional map which may contain :
 
-     ::active-low?
-     ::consumer
-     ::direction
-     ::open-drain?
-     ::open-source?
+     :gpio/active-low?
+     :gpio/consumer
+     :gpio/direction
+     :gpio/open-drain?
+     :gpio/open-source?
        Cf. Namespace description
   
 
    Ex. (handle some-device
-               {17 {::tag :red-led}
-                27 {::tag   :green-led
-                    ::state true}}
-               {::direction :output})"
+               {17 {:gpio/tag :red-led}
+                27 {:gpio/tag   :green-led
+                    :gpio/state true}}
+               {:gpio/direction :output})"
 
   (^AutoCloseable
 
@@ -486,9 +486,9 @@
          tag->GpioLine (reduce-kv (fn add-tag [tag->GpioLine line-number line-options]
                                     (assoc tag->GpioLine
                                            (get line-options
-                                                ::tag
+                                                :gpio/tag
                                                 line-number)
-                                           (if (::state line-options)
+                                           (if (:gpio/state line-options)
                                              (.addLine req
                                                        line-number
                                                        true)
@@ -496,7 +496,7 @@
                                                        line-number))))
                                   {}
                                   line-number->line-options)]
-     (some->> (::consumer handle-options)
+     (some->> (:gpio/consumer handle-options)
               (.setConsumer req))
      (.setFlags req
                 (-flags handle-options))
@@ -546,15 +546,15 @@
                  (let [req (GpioEventRequest. line-number
                                               (condp identical?
                                                      (or (get event-handle-options
-                                                              ::edge-detection)
+                                                              :gpio/edge-detection)
                                                          (get defaults
-                                                              ::edge-detection))
+                                                              :gpio/edge-detection))
                                                 :rising             GpioEdgeDetection/RISING
                                                 :falling            GpioEdgeDetection/FALLING
                                                 :rising-and-falling GpioEdgeDetection/RISING_AND_FALLING)
                                               (-flags event-handle-options))]
 
-                   (some->> (::consumer event-handle-options)
+                   (some->> (:gpio/consumer event-handle-options)
                             (.setConsumer req))
                    req)))
 
@@ -604,21 +604,21 @@
 
    `line-number->watch-options` is a map where keys are line numbers and values are maps which may contain :
 
-     ::active-low?
-     ::consumer
-     ::direction
-     ::open-drain?
-     ::open-source?
-     ::state
-     ::tag
+     :gpio/active-low?
+     :gpio/consumer
+     :gpio/direction
+     :gpio/open-drain?
+     :gpio/open-source?
+     :gpio/state
+     :gpio/tag
        Cf. Namespace description
 
 
    Ex. (watcher some-device
-                {18 {::tag       :left-button
-                     ::direction :input}
-                 23 {::tag       :right-button
-                     ::direction :output}})"
+                {18 {:gpio/tag       :left-button
+                     :gpio/direction :input}
+                 23 {:gpio/tag       :right-button
+                     :gpio/direction :output}})"
 
   ^AutoCloseable
 
@@ -629,8 +629,8 @@
                                        (try
                                          (assoc tag->event-handle
                                                 (if (contains? watch-options
-                                                               ::tag)
-                                                  (::tag watch-options)
+                                                               :gpio/tag)
+                                                  (:gpio/tag watch-options)
                                                   line-number)
                                                 (-event-handle device
                                                                line-number
@@ -701,11 +701,11 @@
           (when (.waitForEvent gpio-watcher
                                gpio-event
                                timeout-ms)
-            {::edge           (if (.isRising gpio-event)
+            {:gpio/edge           (if (.isRising gpio-event)
                                 :rising
                                 :falling)
-             ::nano-timestamp (.getNanoTimestamp gpio-event)
-             ::tag            (get line-number->tag
+             :gpio/nano-timestamp (.getNanoTimestamp gpio-event)
+             :gpio/tag            (get line-number->tag
                                    (.getId gpio-event))}))
       )
     ))

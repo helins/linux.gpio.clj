@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Namespace parameters under "gpio"
+- Relicensed under MPL 2.0
+- Renamed group id from "dvlopt" to "io.helins"
+
 ### Fixed
 
 

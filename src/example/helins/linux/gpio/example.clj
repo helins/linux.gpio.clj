@@ -43,10 +43,10 @@
                                     (reduce (fn add-led [line-number->line-options line-number]
                                               (assoc line-number->line-options
                                                      line-number
-                                                     {::gpio/state false}))
+                                                     {:gpio/state false}))
                                             {}
                                             line-numbers)
-                                    {::gpio/direction :output})]
+                                    {:gpio/direction :output})]
      (let [buffer (gpio/buffer handle)]
        (loop [line-numbers' (cycle line-numbers)]
          (gpio/write handle
@@ -84,14 +84,14 @@
                                       (reduce (fn add-button [line-number->watch-options line-number]
                                                 (assoc line-number->watch-options
                                                        line-number
-                                                       {::gpio/edge-detection :falling
-                                                        ::gpio/direction      :input}))
+                                                       {:gpio/edge-detection :falling
+                                                        :gpio/direction      :input}))
                                               {}
                                               line-numbers))]
      (while true
        (println (if-some [event (gpio/event watcher
                                             timeout-ms)]
                   (format "%d  Button for line %d has been pressed"
-                          (::gpio/nano-timestamp event)
-                          (::gpio/tag event))
+                          (:gpio/nano-timestamp event)
+                          (:gpio/tag event))
                   "Timeout !"))))))
