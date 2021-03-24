@@ -1,31 +1,34 @@
-# dvlopt.linux.gpio
+# Linux.GPIO
 
 [![Clojars
-Project](https://img.shields.io/clojars/v/dvlopt/linux.gpio.svg)](https://clojars.org/dvlopt/linux.gpio)
+Project](https://img.shields.io/clojars/v/helins/linux.gpio.svg)](https://clojars.org/helins/linux.gpio)
  
-[![cljdoc badge](https://cljdoc.org/badge/dvlopt/linux.gpio)](https://cljdoc.org/d/dvlopt/linux.gpio)
+[![cljdoc badge](https://cljdoc.org/badge/helins/linux.gpio)](https://cljdoc.org/d/helins/linux.gpio)
 
-Handle [GPIO](https://github.com/dvlopt/linux-gpio.java) lines in a fast and
+Handle [GPIO](https://github.com/helins/linux-gpio.java) lines in a fast and
 portable way from Clojure.
 
-Based on [linux-gpio.java](https://github.com/dvlopt/linux-gpio.java). Go there
-for rationale and background. In short, this API controls GPIO device from user
-space by using the "new" Linux API which is convenient, standard, and offers a
-some advantages over other methods (eg. automatic clean-up of resources when
-lines are released).
+Based on [linux-gpio.java](https://github.com/helins/linux-gpio.java). Go there
+for rationale and background.
+
+In short, this API controls GPIO devices from user space by using the "new"
+Linux API which is convenient, standard, and offers some advantages over
+other methods (eg. automatic clean-up of resources when lines are released).
+
+A GPIO device is a driver located in "/dev". For instance, on the Raspbian
+operating system running on a Raspberry Pi, one can control all GPIO lines by using
+the "/dev/gpiochip0" GPIO device.
 
 Compatible with Linux 4.8 and higher, tested on the Raspberry Pi 3.
 
-For information about running Clojure on the Raspberry Pi, here is a
-[guide](https://github.com/dvlopt/clojure-raspberry-pi).
 
 ## Usage
 
-Read the
-[API](https://cljdoc.org/d/dvlopt/linux.gpio/1.0.0/api/dvlopt.linux.gpio). The
-namespace description summerizes everything there is to know.
+This is a very brief overview.
 
-You might want to have a look at the [examples](./examples).
+The [full API is available on Cljdoc](https://cljdoc.org/d/helins/linux.gpio/1.0.0/api/helins.linux.gpio).
+
+Small examples are available in the [helins.linux.gpio.example](../main/src/example/helins/linux/gpio/example.clj).
 
 Attention, at least read permission is needed for the used GPIO devices, which
 is enough even for writing to outputs.
@@ -33,7 +36,7 @@ is enough even for writing to outputs.
 For instance :
 
 ```clj
-(require '[dvlopt.linux.gpio :as gpio])
+(require '[helins.linux.gpio :as gpio])
 
 
 ;; Alternating between 2 leds every time a button is released.
@@ -56,7 +59,7 @@ For instance :
     (loop [leds (cycle [:led-1
                         :led-2])]
       (gpio/write led-handle
-                  (gpio/set-lines buffer
+                  (gpio/set-line+ buffer
                                   {(first  leds) true
                                    (second leds) false}))
       (gpio/event button-watcher)
