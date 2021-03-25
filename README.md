@@ -26,7 +26,7 @@ Compatible with Linux 4.8 and higher, tested on the Raspberry Pi 3.
 
 This is a very brief overview.
 
-The [full API is available on Cljdoc](https://cljdoc.org/d/io.helins/linux.gpio/1.0.0/api/helins.linux.gpio).
+The [full API is available on Cljdoc](https://cljdoc.org/d/io.helins/linux.gpio).
 
 Small examples are available in the [helins.linux.gpio.example](../main/src/example/helins/linux/gpio/example.clj).
 
