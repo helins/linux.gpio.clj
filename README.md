@@ -26,7 +26,7 @@ Compatible with Linux 4.8 and higher, tested on the Raspberry Pi 3.
 
 This is a very brief overview.
 
-The [full API is available on Cljdoc](https://cljdoc.org/d/io.helins/linux.gpio/1.0.0/api/helins.linux.gpio).
+The [full API is available on Cljdoc](https://cljdoc.org/d/io.helins/linux.gpio).
 
 Small examples are available in the [helins.linux.gpio.example](../main/src/example/helins/linux/gpio/example.clj).
 
@@ -52,7 +52,7 @@ For instance :
                                              :gpio/tag   :led-1}
                                          18 {:gpio/state true
                                              :gpio/tag   :led-2}}
-                                        {::gpio/direction :output})
+                                        {:gpio/direction :output})
             button-watcher (gpio/watcher device
                                          {22 {:gpio/direction :input}})]
   (let [buffer (gpio/buffer led-handle)]
